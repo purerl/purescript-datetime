@@ -1,0 +1,15 @@
+{
+    "name": "datetime",
+    "set": "erl-0.10.7",
+    "source": "https://github.com/purerl/package-sets.git",
+    "depends": [
+        "assert",
+        "math",
+        "maps",
+        "integers",
+        "generics",
+        "functions",
+        "foldable-traversable",
+        "enums"
+    ]
+}
