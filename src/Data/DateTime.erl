@@ -18,13 +18,13 @@ createDateTime(Rec) ->
 calcDiff() -> fun (Rec1,Rec2) ->
     #{ millisecond := MS1 } = Rec1,
     #{ millisecond := MS2 } = Rec2,
-    1000 * (createDateTime(Rec1) - createDateTime(Rec2))
-        + (Rec1 - Rec2)
+    float(1000 * (createDateTime(Rec1) - createDateTime(Rec2))
+        + (MS1 - MS2))
 end.
 
-adjustImpl(Just,Nothing,Offset,Rec) ->
+adjustImpl(Just,_Nothing,Offset,Rec) ->
     #{ millisecond := MS } = Rec,
-    Secs1 = maps:get(Rec,second) + ((MS + Offset) div 1000),
-    Secs = createDateTime(Rec#{ second := Secs1 }),
-    {{Y,Mo,D},{H,M,S}} = calendar:gregorian_seconds_to_datetime(Secs1),
-    #{ year => Y, month => Mo, day => D, hour => H, minute => M, second => S, millisecond => ((MS + Offset) rem 1000) }.
+    Secs1 = maps:get(second,Rec) + ((MS + round(Offset)) div 1000),
+    AdjustedDT = createDateTime(Rec#{ second := Secs1 }),
+    {{Y,Mo,D},{H,M,S}} = calendar:gregorian_seconds_to_datetime(AdjustedDT),
+    Just(#{ year => Y, month => Mo, day => D, hour => H, minute => M, second => S, millisecond => ((MS + round(Offset)) rem 1000) }).
