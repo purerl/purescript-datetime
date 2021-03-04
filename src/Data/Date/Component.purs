@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 -- | A year component for a date.
 -- |
 -- | The constructor is private as the `Year` type is bounded to the range
--- | -271820 to 275759, inclusive. The `toEnum` function can be used to safely
+-- | 0 to 275759, inclusive. The `toEnum` function can be used to safely
 -- | acquire a year value from an integer.
 newtype Year = Year Int
 
@@ -25,7 +25,7 @@ derive newtype instance ordYear :: Ord Year
 -- Using these year values means `Date bottom bottom bottom` is a valid date,
 -- likewise for `top`.
 instance boundedYear :: Bounded Year where
-  bottom = Year (-271820)
+  bottom = Year 0
   top = Year 275759
 
 instance enumYear :: Enum Year where
@@ -33,9 +33,9 @@ instance enumYear :: Enum Year where
   pred = toEnum <<< (_ - 1) <<< fromEnum
 
 instance boundedEnumYear :: BoundedEnum Year where
-  cardinality = Cardinality 547580
+  cardinality = Cardinality 275760
   toEnum n
-    | n >= (-271820) && n <= 275759 = Just (Year n)
+    | n >= 0 && n <= 275759 = Just (Year n)
     | otherwise = Nothing
   fromEnum (Year n) = n
 

@@ -2,8 +2,6 @@ module Test.Main where
 
 import Prelude
 
-import Effect (Effect)
-import Effect.Console (log)
 import Data.Array as Array
 import Data.Date as Date
 import Data.DateTime as DateTime
@@ -17,9 +15,11 @@ import Data.Newtype (over, unwrap)
 import Data.Time as Time
 import Data.Time.Duration as Duration
 import Data.Tuple (Tuple(..), snd)
+import Effect (Effect)
+import Effect.Console (log)
 import Math (floor)
 import Partial.Unsafe (unsafePartial)
-import Test.Assert (assert)
+import Test.Assert (assert, assertEqual)
 import Type.Proxy (Proxy(..))
 
 main :: Effect Unit
@@ -151,20 +151,23 @@ main = do
   let dt5 = DateTime.DateTime d3 t1
 
   log "Check that adjust behaves as expected"
-  assert $ DateTime.adjust (Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0)) dt1 == Just dt4
-  assert $ (Date.year <<< DateTime.date <$>
+  assertEqual{ actual: DateTime.adjust (Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0)) dt1 , expected: Just dt4 }
+
+  assertEqual{ actual: (Date.year <<< DateTime.date <$>
            (DateTime.adjust (Duration.Days 735963.0) epochDateTime))
-           == toEnum 2016
+           , expected: toEnum 2016 }
 
   log "Check that diff behaves as expected"
+  
   assert $ DateTime.diff dt2 dt1 == Duration.Minutes 40.0
   assert $ DateTime.diff dt1 dt2 == Duration.Minutes (-40.0)
   assert $ DateTime.diff dt3 dt1 == Duration.Days 31.0
   assert $ DateTime.diff dt5 dt3 == Duration.Days 29.0
   assert $ DateTime.diff dt1 dt3 == Duration.Days (-31.0)
-  assert $ DateTime.diff dt4 dt1 == Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0)
-  assert $ over Duration.Days floor (DateTime.diff dt1 epochDateTime)
-           == Duration.Days 735963.0
+  assertEqual{ expected: DateTime.diff dt4 dt1, actual: Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0) }
+  assertEqual { actual: over Duration.Days floor (DateTime.diff dt1 epochDateTime)
+              , expected:  Duration.Days 735963.0
+              }
 
   -- instant -----------------------------------------------------------------
 
@@ -177,15 +180,16 @@ main = do
   assert $ Just topInstant == Instant.instant (Instant.unInstant topInstant)
 
   log "Check that an Instant can be constructed from epoch"
+  assertEqual { actual: Instant.unInstant $ Instant.fromDateTime epochDateTime, expected: Duration.Milliseconds epochMillis }
   assert $ (Instant.unInstant $ Instant.fromDateTime epochDateTime) == Duration.Milliseconds epochMillis
 
   log "Check that instant/datetime conversion is bijective"
-  assert $ Instant.toDateTime (Instant.fromDateTime bottom) == bottom
-  assert $ Instant.toDateTime (Instant.fromDateTime top) == top
-  assert $ Instant.toDateTime (Instant.fromDateTime dt1) == dt1
-  assert $ Instant.toDateTime (Instant.fromDateTime dt2) == dt2
-  assert $ Instant.toDateTime (Instant.fromDateTime dt3) == dt3
-  assert $ Instant.toDateTime (Instant.fromDateTime dt4) == dt4
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime bottom), expected: bottom }
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime top), expected: top }
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt1), expected: dt1 }
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt2), expected: dt2 } 
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt3), expected: dt3 } 
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt4), expected: dt4 } 
 
   log "All tests done"
 
