@@ -1,9 +1,9 @@
 module Test.Main where
 
 import Prelude
-
 import Data.Array as Array
 import Data.Date as Date
+import Data.DateTime (DateTime(..), Time(..))
 import Data.DateTime as DateTime
 import Data.DateTime.Instant as Instant
 import Data.Either (Either(..), isRight)
@@ -40,36 +40,37 @@ main = do
     == Left (pure (IsoDuration.ContainsNegativeValue Interval.Day))
   assert $ IsoDuration.mkIsoDuration (mempty)
     == Left (pure IsoDuration.IsEmpty)
-
-  let epochDate = unsafePartial fromJust $ Date.canonicalDate
-                  <$> toEnum 1
-                  <*> pure bottom
-                  <*> pure bottom
-  let epochDateTime = DateTime.DateTime epochDate bottom
-  let epochMillis = -62135596800000.0
+  let
+    epochDate =
+      unsafePartial fromJust $ Date.canonicalDate
+        <$> toEnum 1
+        <*> pure bottom
+        <*> pure bottom
+  let
+    epochDateTime = DateTime.DateTime epochDate bottom
+  let
+    epochMillis = -62135596800000.0
   -- time --------------------------------------------------------------------
-
   log "Check that Hour is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Time.Hour)
-
   log "Check that Minute is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Time.Minute)
-
   log "Check that Second is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Time.Second)
-
   log "Check that Millisecond is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Time.Millisecond)
-
   log "Check that Time is a good Bounded"
   checkBounded (Proxy :: Proxy Time.Time)
-
-  let t1 = unsafePartial $ fromJust $ Time.Time <$> toEnum 17 <*> toEnum 42 <*> toEnum 16 <*> toEnum 362
-  let t2 = unsafePartial $ fromJust $ Time.Time <$> toEnum 18 <*> toEnum 22 <*> toEnum 16 <*> toEnum 362
-  let t3 = unsafePartial $ fromJust $ Time.Time <$> toEnum 17 <*> toEnum 2 <*> toEnum 16 <*> toEnum 362
-  let t4 = unsafePartial $ fromJust $ Time.Time <$> toEnum 23 <*> toEnum 0 <*> toEnum 0 <*> toEnum 0
-  let t5 = unsafePartial $ fromJust $ Time.Time <$> toEnum 1 <*> toEnum 0 <*> toEnum 0 <*> toEnum 0
-
+  let
+    t1 = unsafePartial $ fromJust $ Time.Time <$> toEnum 17 <*> toEnum 42 <*> toEnum 16 <*> toEnum 362
+  let
+    t2 = unsafePartial $ fromJust $ Time.Time <$> toEnum 18 <*> toEnum 22 <*> toEnum 16 <*> toEnum 362
+  let
+    t3 = unsafePartial $ fromJust $ Time.Time <$> toEnum 17 <*> toEnum 2 <*> toEnum 16 <*> toEnum 362
+  let
+    t4 = unsafePartial $ fromJust $ Time.Time <$> toEnum 23 <*> toEnum 0 <*> toEnum 0 <*> toEnum 0
+  let
+    t5 = unsafePartial $ fromJust $ Time.Time <$> toEnum 1 <*> toEnum 0 <*> toEnum 0 <*> toEnum 0
   log "Check that adjust behaves as expected"
   assert $ Time.adjust (Duration.Milliseconds 1.0) top == Tuple (Duration.Days 1.0) bottom
   assert $ Time.adjust (Duration.Milliseconds (-1.0)) bottom == Tuple (Duration.Days (-1.0)) top
@@ -79,32 +80,23 @@ main = do
   assert $ Time.adjust (Duration.fromDuration (Duration.Days 2.0) <> Duration.fromDuration (Duration.Minutes (-40.0))) t1 == Tuple (Duration.Days 2.0) t3
   assert $ snd (Time.adjust (Duration.fromDuration (Duration.Days 3.872)) t1) == snd (Time.adjust (Duration.fromDuration (Duration.Days 0.872)) t1)
   assert $ Time.adjust (Duration.Hours 2.0) t4 == Tuple (Duration.Days 1.0) t5
-
   log "Check that diff behaves as expected"
   assert $ Time.diff t2 t1 == Duration.Minutes 40.0
   assert $ Time.diff t1 t2 == Duration.Minutes (-40.0)
   assert $ Time.diff t4 t5 == Duration.Hours 22.0
-
   -- date --------------------------------------------------------------------
-
   log "Check that Year is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Date.Year)
-
   log "Check that Month is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Date.Month)
-
   log "Check that Day is a good BoundedEnum"
   checkBoundedEnum (Proxy :: Proxy Date.Day)
-
   log "Check that Date is a good Bounded"
   checkBounded (Proxy :: Proxy Date.Date)
-
   log "Check that the earliest date is a valid date"
   assert $ Just bottom == Date.exactDate bottom bottom bottom
-
   log "Check that the latest date is a valid date"
   assert $ Just top == Date.exactDate top top top
-
   log "Check that weekday behaves as expected"
   assert $ Date.weekday (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.June <*> toEnum 6) == Date.Monday
   assert $ Date.weekday (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.June <*> toEnum 7) == Date.Tuesday
@@ -113,84 +105,90 @@ main = do
   assert $ Date.weekday (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.June <*> toEnum 10) == Date.Friday
   assert $ Date.weekday (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.June <*> toEnum 11) == Date.Saturday
   assert $ Date.weekday (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.June <*> toEnum 12) == Date.Sunday
-
-  let d1 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.January <*> toEnum 1
-  let d2 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.February <*> toEnum 1
-  let d3 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.March <*> toEnum 1
-  let d4 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2018 <*> pure Date.September <*> toEnum 26
-  let d5 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 1988 <*> pure Date.August <*> toEnum 15
-
+  let
+    d1 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.January <*> toEnum 1
+  let
+    d2 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.February <*> toEnum 1
+  let
+    d3 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2016 <*> pure Date.March <*> toEnum 1
+  let
+    d4 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2018 <*> pure Date.September <*> toEnum 26
+  let
+    d5 = unsafePartial fromJust $ Date.canonicalDate <$> toEnum 1988 <*> pure Date.August <*> toEnum 15
   log "Check that diff behaves as expected"
   assert $ Date.diff d2 d1 == Duration.Days 31.0
   assert $ Date.diff d3 d2 == Duration.Days 29.0
-
-  let unsafeYear = unsafePartial fromJust <<< toEnum
+  let
+    unsafeYear = unsafePartial fromJust <<< toEnum
   log "Check that isLeapYear behaves as expected"
   assert $ not $ Date.isLeapYear (unsafeYear 2017)
   assert $ Date.isLeapYear (unsafeYear 2016)
-
   log "Check that epoch is correctly constructed"
   assert $ Just (Date.year epochDate) == toEnum 1
   assert $ Date.month epochDate == bottom
   assert $ Date.day epochDate == bottom
-
   log "Check that adjust behaves as expected"
   assert $ Date.adjust (Duration.Days 31.0) d1 == Just d2
   assert $ Date.adjust (Duration.Days 999.0) d1 == Just d4
   assert $ Date.adjust (Duration.Days 10000.0) d5 == Just d1
   assert $ Date.adjust (Duration.Days (-31.0)) d2 == Just d1
-  assert $ Date.adjust (Duration.Days (- 999.0)) d4 == Just d1
+  assert $ Date.adjust (Duration.Days (-999.0)) d4 == Just d1
   assert $ Date.adjust (Duration.Days (-10000.0)) d1 == Just d5
-
+  assert $ Date.adjust (Duration.Days (-10000.0)) d1 == Just d5
   -- datetime ----------------------------------------------------------------
-
-  let dt1 = DateTime.DateTime d1 t1
-  let dt2 = DateTime.DateTime d1 t2
-  let dt3 = DateTime.DateTime d2 t1
-  let dt4 = DateTime.DateTime d2 t2
-  let dt5 = DateTime.DateTime d3 t1
-
+  let
+    dt1 = DateTime.DateTime d1 t1
+  let
+    dt2 = DateTime.DateTime d1 t2
+  let
+    dt3 = DateTime.DateTime d2 t1
+  let
+    dt4 = DateTime.DateTime d2 t2
+  let
+    dt5 = DateTime.DateTime d3 t1
   log "Check that adjust behaves as expected"
-  assertEqual{ actual: DateTime.adjust (Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0)) dt1 , expected: Just dt4 }
-
-  assertEqual{ actual: (Date.year <<< DateTime.date <$>
-           (DateTime.adjust (Duration.Days 735963.0) epochDateTime))
-           , expected: toEnum 2016 }
-
+  assertEqual { actual: DateTime.adjust (Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0)) dt1, expected: Just dt4 }
+  assertEqual
+    { actual:
+        ( Date.year <<< DateTime.date
+            <$> (DateTime.adjust (Duration.Days 735963.0) epochDateTime)
+        )
+    , expected: toEnum 2016
+    }
+  assertEqual
+    { actual: DateTime.adjust (Duration.Seconds (-24.0)) $ DateTime (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2021 <*> pure Date.May <*> toEnum 24) (unsafePartial $ fromJust $ Time.Time <$> toEnum 9 <*> toEnum 17 <*> toEnum 23 <*> toEnum 273)
+    , expected: Just $ DateTime (unsafePartial fromJust $ Date.canonicalDate <$> toEnum 2021 <*> pure Date.May <*> toEnum 24) (unsafePartial $ fromJust $ Time.Time <$> toEnum 9 <*> toEnum 16 <*> toEnum 59 <*> toEnum 273)
+    }
   log "Check that diff behaves as expected"
-  
   assert $ DateTime.diff dt2 dt1 == Duration.Minutes 40.0
   assert $ DateTime.diff dt1 dt2 == Duration.Minutes (-40.0)
   assert $ DateTime.diff dt3 dt1 == Duration.Days 31.0
   assert $ DateTime.diff dt5 dt3 == Duration.Days 29.0
   assert $ DateTime.diff dt1 dt3 == Duration.Days (-31.0)
-  assertEqual{ expected: DateTime.diff dt4 dt1, actual: Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0) }
-  assertEqual { actual: over Duration.Days floor (DateTime.diff dt1 epochDateTime)
-              , expected:  Duration.Days 735963.0
-              }
-
+  assertEqual { expected: DateTime.diff dt4 dt1, actual: Duration.fromDuration (Duration.Days 31.0) <> Duration.fromDuration (Duration.Minutes 40.0) }
+  assertEqual
+    { actual: over Duration.Days floor (DateTime.diff dt1 epochDateTime)
+    , expected: Duration.Days 735963.0
+    }
   -- instant -----------------------------------------------------------------
-
   log "Check that the earliest date is a valid Instant"
-  let bottomInstant = Instant.fromDateTime bottom
+  let
+    bottomInstant = Instant.fromDateTime bottom
   assert $ Just bottomInstant == Instant.instant (Instant.unInstant bottomInstant)
-
   log "Check that the latest date is a valid Instant"
-  let topInstant = Instant.fromDateTime top
+  let
+    topInstant = Instant.fromDateTime top
   assert $ Just topInstant == Instant.instant (Instant.unInstant topInstant)
-
   log "Check that an Instant can be constructed from epoch"
   assertEqual { actual: Instant.unInstant $ Instant.fromDateTime epochDateTime, expected: Duration.Milliseconds epochMillis }
   assert $ (Instant.unInstant $ Instant.fromDateTime epochDateTime) == Duration.Milliseconds epochMillis
-
   log "Check that instant/datetime conversion is bijective"
   assertEqual { actual: Instant.toDateTime (Instant.fromDateTime bottom), expected: bottom }
   assertEqual { actual: Instant.toDateTime (Instant.fromDateTime top), expected: top }
   assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt1), expected: dt1 }
-  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt2), expected: dt2 } 
-  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt3), expected: dt3 } 
-  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt4), expected: dt4 } 
-
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt2), expected: dt2 }
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt3), expected: dt3 }
+  assertEqual { actual: Instant.toDateTime (Instant.fromDateTime dt4), expected: dt4 }
   log "All tests done"
 
 checkBounded :: forall e. Bounded e => Proxy e -> Effect Unit
@@ -203,5 +201,6 @@ checkBounded _ = do
 checkBoundedEnum :: forall e. BoundedEnum e => Proxy e -> Effect Unit
 checkBoundedEnum p = do
   checkBounded p
-  let card = unwrap (cardinality :: Cardinality e)
+  let
+    card = unwrap (cardinality :: Cardinality e)
   assert $ Array.length (enumFromTo bottom (top :: e)) == card

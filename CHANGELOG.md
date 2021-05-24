@@ -12,6 +12,16 @@ Bugfixes:
 
 Other improvements:
 
+## [v5.0.2](https://github.com/purescript/purescript-datetime/releases/tag/v5.0.2) - 2021-04-19
+
+Other improvements:
+- Fix one more UnusedName warning revealed by v0.14.1 PureScript release (@thomashoneyman)
+
+## [v5.0.1](https://github.com/purescript/purescript-datetime/releases/tag/v5.0.1) - 2021-04-19
+
+Other improvements:
+- Fix UnusedName warnings revealed by v0.14.1 PureScript release (#91 by @JordanMartinez)
+
 ## [v5.0.0](https://github.com/purescript/purescript-datetime/releases/tag/v5.0.0) - 2021-02-26
 
 Breaking changes:
