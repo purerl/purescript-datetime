@@ -13,7 +13,6 @@ module Data.DateTime
   ) where
 
 import Prelude
-
 import Data.Date (Date, Day, Month(..), Weekday(..), Year, canonicalDate, day, exactDate, month, weekday, year)
 import Data.Enum (toEnum, fromEnum)
 import Data.Function.Uncurried (Fn2, runFn2)
@@ -22,9 +21,11 @@ import Data.Time.Duration (class Duration, fromDuration, toDuration, Millisecond
 import Data.Maybe (Maybe(..))
 
 -- | A date/time value in the Gregorian calendar/UTC time zone.
-data DateTime = DateTime Date Time
+data DateTime
+  = DateTime Date Time
 
 derive instance eqDateTime :: Eq DateTime
+
 derive instance ordDateTime :: Ord DateTime
 
 instance boundedDateTime :: Bounded DateTime where
@@ -56,25 +57,26 @@ modifyTimeF f (DateTime d t) = DateTime d <$> f t
 -- | if the resulting date would be outside of the range of valid dates.
 adjust :: forall d. Duration d => d -> DateTime -> Maybe DateTime
 adjust d dt =
-  adjustImpl Just Nothing (fromDuration d) (toRecord dt) >>= \rec ->
-    DateTime
-      <$> join (exactDate <$> toEnum rec.year <*> toEnum rec.month <*> toEnum rec.day)
-      <*> (Time <$> toEnum rec.hour <*> toEnum rec.minute <*> toEnum rec.second <*> toEnum rec.millisecond)
+  adjustImpl Just Nothing (fromDuration d) (toRecord dt)
+    >>= \rec ->
+        DateTime
+          <$> join (exactDate <$> toEnum rec.year <*> toEnum rec.month <*> toEnum rec.day)
+          <*> (Time <$> toEnum rec.hour <*> toEnum rec.minute <*> toEnum rec.second <*> toEnum rec.millisecond)
 
 -- | Calculates the difference between two date/time values, returning the
 -- | result as a duration.
 diff :: forall d. Duration d => DateTime -> DateTime -> d
-diff dt1 dt2 = toDuration $ runFn2 calcDiff (toRecord dt1) (toRecord dt2)
+diff dt1 dt2 = toDuration $ calcDiff (toRecord dt1) (toRecord dt2)
 
-type DateRec =
-  { year :: Int
-  , month :: Int
-  , day :: Int
-  , hour :: Int
-  , minute :: Int
-  , second :: Int
-  , millisecond :: Int
-  }
+type DateRec
+  = { year :: Int
+    , month :: Int
+    , day :: Int
+    , hour :: Int
+    , minute :: Int
+    , second :: Int
+    , millisecond :: Int
+    }
 
 toRecord :: DateTime -> DateRec
 toRecord (DateTime d t) =
@@ -88,12 +90,11 @@ toRecord (DateTime d t) =
   }
 
 -- TODO: these could (and probably should) be implemented in PS
+foreign import calcDiff :: DateRec -> DateRec -> Milliseconds
 
-foreign import calcDiff :: Fn2 DateRec DateRec Milliseconds
-
-foreign import adjustImpl
-  :: (forall a. a -> Maybe a)
-  -> (forall a. Maybe a)
-  -> Milliseconds
-  -> DateRec
-  -> Maybe DateRec
+foreign import adjustImpl ::
+  (forall a. a -> Maybe a) ->
+  (forall a. Maybe a) ->
+  Milliseconds ->
+  DateRec ->
+  Maybe DateRec
